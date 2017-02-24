@@ -69,7 +69,7 @@ class Wp_Stripe_Plaid {
 	public function __construct() {
 
 		$this->plugin_name = 'wp-stripe-plaid';
-		$this->version = '1.0.0';
+		$this->version = '1.0.1';
 
 		$this->load_dependencies();
 		$this->set_locale();
@@ -163,6 +163,9 @@ class Wp_Stripe_Plaid {
 	private function define_public_hooks() {
 
 		$plugin_public = new Wp_Stripe_Plaid_Public( $this->get_plugin_name(), $this->get_version() );
+
+		// var_dump($plugin_public); exit;
+
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 

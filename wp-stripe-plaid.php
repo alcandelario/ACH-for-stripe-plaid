@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              htps://www.justinwhall.com
+ * @link              htps://doejo.com
  * @since             1.0.0
  * @package           Wp_Stripe_Plaid
  *
  * @wordpress-plugin
- * Plugin Name:       ACH for Stripe + Plaid
+ * Plugin Name:       Stripe + Plaid payments
  * Plugin URI:        https://www.justinwhall.com/wp-stripe-plaid-ach-wordpress-plugin
- * Description:       Accept Stripe ACH payments with Stripe + Plaid.
+ * Description:       Accept Credit Cards with Stripe's checkout.js or ACH payments with Plaid Link + Stripe.
  * Version:           1.0.1
- * Author:            Justin W Hall
- * Author URI:        https://www.justinwhall.com
+ * Author:            Doejo LLC
+ * Author URI:        https://doejo.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       wp-stripe-plaid
@@ -27,7 +27,7 @@
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
-	die;
+  die;
 }
 
 define( 'WP_STRIPE_PLAID_PATH', plugin_dir_path( __FILE__ ) );
@@ -36,8 +36,8 @@ define( 'WP_STRIPE_PLAID_PATH', plugin_dir_path( __FILE__ ) );
  * This action is documented in includes/class-wp-stripe-plaid-activator.php
  */
 function activate_wp_stripe_plaid() {
-	require_once WP_STRIPE_PLAID_PATH . 'includes/class-wp-stripe-plaid-activator.php';
-	Wp_Stripe_Plaid_Activator::activate();
+  require_once WP_STRIPE_PLAID_PATH . 'includes/class-wp-stripe-plaid-activator.php';
+  Wp_Stripe_Plaid_Activator::activate();
 }
 
 /**
@@ -45,8 +45,8 @@ function activate_wp_stripe_plaid() {
  * This action is documented in includes/class-wp-stripe-plaid-deactivator.php
  */
 function deactivate_wp_stripe_plaid() {
-	require_once WP_STRIPE_PLAID_PATH . 'includes/class-wp-stripe-plaid-deactivator.php';
-	Wp_Stripe_Plaid_Deactivator::deactivate();
+  require_once WP_STRIPE_PLAID_PATH . 'includes/class-wp-stripe-plaid-deactivator.php';
+  Wp_Stripe_Plaid_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_wp_stripe_plaid' );
@@ -71,8 +71,8 @@ require WP_STRIPE_PLAID_PATH . 'vendor/autoload.php';
  */
 function run_wp_stripe_plaid() {
 
-	$plugin = new Wp_Stripe_Plaid();
-	$plugin->run();
+  $plugin = new Wp_Stripe_Plaid();
+  $plugin->run();
 
 }
 run_wp_stripe_plaid();

@@ -83,29 +83,29 @@ class Wp_Stripe_Plaid_Admin {
 	}
 
 	public function admin_init() {
-	    //set the settings
-	    $this->settings_api->set_sections( $this->get_settings_sections() );
-	    $this->settings_api->set_fields( $this->get_settings_fields() );
-	    //initialize settings
-	    $this->settings_api->admin_init();
+			//set the settings
+			$this->settings_api->set_sections( $this->get_settings_sections() );
+			$this->settings_api->set_fields( $this->get_settings_fields() );
+			//initialize settings
+			$this->settings_api->admin_init();
 	}
 
 	public function admin_menu() {
-	    add_options_page( 'Stripe + Plaid', 'Stripe + Plaid', 'delete_posts', 'stripe_plaid', array($this, 'plugin_page') );
+			add_options_page( 'Stripe + Plaid', 'Stripe + Plaid', 'delete_posts', 'stripe_plaid', array($this, 'plugin_page') );
 	}
 
 	public function get_settings_sections() {
-	    $sections = array(
-	        array(
-	            'id'    => 'stripe_plaid_settings',
-	            'title' => __( 'Settings', 'stripe_plaid' )
-	        ),
-	        array(
-	            'id'    => 'stripe_plaid_log',
-	            'title' => __( 'Log', 'stripe_plaid' )
-	        )
-	    );
-	    return $sections;
+			$sections = array(
+					array(
+							'id'    => 'stripe_plaid_settings',
+							'title' => __( 'Settings', 'stripe_plaid' )
+					),
+					array(
+							'id'    => 'stripe_plaid_log',
+							'title' => __( 'Log', 'stripe_plaid' )
+					)
+			);
+			return $sections;
 	}
 	/**
 	 * Returns all the settings fields
@@ -113,90 +113,107 @@ class Wp_Stripe_Plaid_Admin {
 	 * @return array settings fields
 	 */
 	public function get_settings_fields() {
-	    $settings_fields = array(
-	        'stripe_plaid_settings' => array(
-	        	array(
-	        	    'name'    => 'sp_environment',
-	        	    'label'   => __( 'Environment', $plugin_name ),
-	        	    'desc'    => __( 'Live or test modes?', $plugin_name ),
-	        	    'type'    => 'radio',
-	        	    'options' => array(
-	        	        'live' => 'Live',
-	        	        'test'  => 'Test'
-	        	    )
-	        	),
-	            array(
-	                'name'              => 'stripe_live_api_key',
-	                'label'             => __( 'Stripe Secret LIVE Key', $plugin_name ),
-	                'desc'              => __( '', $plugin_name ),
-	                'placeholder'       => __( '', $plugin_name ),
-	                'type'              => 'text',
-	                'default'           => '',
-	                'sanitize_callback' => 'sanitize_text_field'
-	            ),
-	            array(
-	                'name'              => 'stripe_test_api_key',
-	                'label'             => __( 'Stripe Secret TEST Key', $plugin_name ),
-	                'desc'              => __( '', $plugin_name ),
-	                'placeholder'       => __( '', $plugin_name ),
-	                'type'              => 'text',
-	                'default'           => '',
-	                'sanitize_callback' => 'sanitize_text_field'
-	            ),
-	            array(
-	                'name'        => 'stripe_help',
-	                'desc'        => __( 'Stripe keys are located: <a target="_blank" href="https://dashboard.stripe.com/account/apikeys">https://dashboard.stripe.com/account/apikeys</a>', $plugin_name ),
-	                'type'        => 'html'
-	            ),
-	            array(
-	                'name'              => 'plaid_client_id',
-	                'label'             => __( 'Plaid Client ID', $plugin_name ),
-	                'desc'              => __( '', $plugin_name ),
-	                'placeholder'       => __( '', $plugin_name ),
-	                'type'              => 'text',
-	                'default'           => '',
-	                'sanitize_callback' => 'sanitize_text_field'
-	            ),
-	            array(
-	                'name'              => 'plaid_public_key',
-	                'label'             => __( 'Plaid Public Key', $plugin_name ),
-	                'desc'              => __( '', $plugin_name ),
-	                'placeholder'       => __( '', $plugin_name ),
-	                'type'              => 'text',
-	                'default'           => '',
-	                'sanitize_callback' => 'sanitize_text_field'
-	            ),
-	            array(
-	                'name'              => 'plaid_secret',
-	                'label'             => __( 'Plaid Secret', $plugin_name ),
-	                'desc'              => __( '', $plugin_name ),
-	                'placeholder'       => __( '', $plugin_name ),
-	                'type'              => 'text',
-	                'default'           => '',
-	                'sanitize_callback' => 'sanitize_text_field'
-	            ),
-	            array(
-	                'name'        => 'plaid_help',
-	                'desc'        => __( 'Plaid keys are located: <a target="_blank" href="https://dashboard.plaid.com/account/keys">https://dashboard.plaid.com/account/keys</a>', $plugin_name ),
-	                'type'        => 'html'
-	            ),
-	            array(
-	                'name'  => 'log',
-	                'label' => __( 'Turn on logging', $plugin_name ),
-	                'desc'  => __( 'Should not be left on indefinitely.', $plugin_name ),
-	                'type'  => 'checkbox'
-	            )
-            )
-
-	    );
-	    return $settings_fields;
+			$settings_fields = array(
+					'stripe_plaid_settings' => array(
+						array(
+								'name'    => 'sp_environment',
+								'label'   => __( 'Environment', $plugin_name ),
+								'desc'    => __( 'Live or test modes?', $plugin_name ),
+								'type'    => 'radio',
+								'options' => array(
+										'live' => 'Live',
+										'test'  => 'Test'
+								)
+						),
+						array(
+								'name'              => 'stripe_live_public_api_key',
+								'label'             => __( 'Stripe Public LIVE Key', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'              => 'stripe_live_api_key',
+								'label'             => __( 'Stripe Secret LIVE Key', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'              => 'stripe_test_public_api_key',
+								'label'             => __( 'Stripe Public TEST Key', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'              => 'stripe_test_api_key',
+								'label'             => __( 'Stripe Secret TEST Key', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'        => 'stripe_help',
+								'desc'        => __( 'Stripe keys are located: <a target="_blank" href="https://dashboard.stripe.com/account/apikeys">https://dashboard.stripe.com/account/apikeys</a>', $plugin_name ),
+								'type'        => 'html'
+						),
+						array(
+								'name'              => 'plaid_client_id',
+								'label'             => __( 'Plaid Client ID', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'              => 'plaid_public_key',
+								'label'             => __( 'Plaid Public Key', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'              => 'plaid_secret',
+								'label'             => __( 'Plaid Secret', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( '', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
+						),
+						array(
+								'name'        => 'plaid_help',
+								'desc'        => __( 'Plaid keys are located: <a target="_blank" href="https://dashboard.plaid.com/account/keys">https://dashboard.plaid.com/account/keys</a>', $plugin_name ),
+								'type'        => 'html'
+						),
+						array(
+								'name'  => 'log',
+								'label' => __( 'Turn on logging', $plugin_name ),
+								'desc'  => __( 'Should not be left on indefinitely.', $plugin_name ),
+								'type'  => 'checkbox'
+						)
+					)
+			);
+			return $settings_fields;
 	}
 	
 	public function plugin_page() {
-	    echo '<div class="wrap">';
-	    $this->settings_api->show_navigation();
-	    $this->settings_api->show_forms();
-	    echo '</div>';
+			echo '<div class="wrap">';
+			$this->settings_api->show_navigation();
+			$this->settings_api->show_forms();
+			echo '</div>';
 	}
 	/**
 	 * Get all the pages
@@ -204,14 +221,14 @@ class Wp_Stripe_Plaid_Admin {
 	 * @return array page names with key value pairs
 	 */
 	public function get_pages() {
-	    $pages = get_pages();
-	    $pages_options = array();
-	    if ( $pages ) {
-	        foreach ($pages as $page) {
-	            $pages_options[$page->ID] = $page->post_title;
-	        }
-	    }
-	    return $pages_options;
+			$pages = get_pages();
+			$pages_options = array();
+			if ( $pages ) {
+					foreach ($pages as $page) {
+							$pages_options[$page->ID] = $page->post_title;
+					}
+			}
+			return $pages_options;
 	}
 
 }
