@@ -3,7 +3,7 @@
 
 	var opt = {};
 	
-	// Plaid Link
+	// Plaid Link Init
 	var linkHandler = Plaid.create({
 			env							: 'tartan',
 			clientName			: getCustomerName(),
@@ -19,6 +19,7 @@
 			},
 	});
 
+	// Stripe Checkout Init
 	var checkoutHandler = StripeCheckout.configure({
 		key								: $('#checkoutButton').data( 'publickey' ),
 		image 						: 'https://stripe.com/img/documentation/checkout/marketplace.png',
@@ -30,7 +31,7 @@
 			// Get the token ID to your server-side code for use.
 			opt.public_token = token.id;
 
-			// Create the customer and process the charge server-side
+			// Process the charge server-side
 			callStripe();
 		}
 	});
@@ -38,43 +39,137 @@
 	// Calculate total with processing fees automatically
 	document.getElementById( 'subTotal' ).addEventListener("keyup", calculatePercent);
 
-	// Call this since the subtotal might be prefilled upon page load
+	// Call it upon page load since it may be prefilled
 	calculatePercent();
 
-	// Trigger the Link UI
-	document.getElementById( 'linkACHButton' ).addEventListener('click', function(e) {
-		
-		linkHandler.open();
-		e.preventDefault();
+	// Triggers the Plaid Link UI
+	document.getElementById( 'linkACHButton' ).addEventListener('click', clickPlaidLink );
+
+	// Process the Plaid token server-side
+	document.getElementById( 'payACHButton' ).addEventListener( 'click', callPlaid );
+
+	// Triggers the Sripe Checkout UI
+	document.getElementById( 'checkoutButton' ).addEventListener('click', clickStripeCheckout );
+
+	// Close Stripe Checkout on page navigation:
+	window.addEventListener('popstate', function() {
+		checkoutHandler.close();
 	});
 
-	// Trigger the Checkout UI
-	document.getElementById( 'checkoutButton' ).addEventListener('click', function(e) {
+	function configFormValidation() {
+
+		// Define a custom validation
+		$.validator.addMethod("notJustASpace", function(value, element) { 
+			return ( $.trim( value ).length > 0 ) ? true : false; 
+		}, "Required");
+
+		// Override jquery validate plugin defaults
+		$.validator.setDefaults({
+				highlight: function(element) {
+						$(element).closest('.form-group').addClass('has-error');
+				},
+				unhighlight: function(element) {
+						$(element).closest('.form-group').removeClass('has-error');
+				},
+				errorElement: 'span',
+				errorClass: 'help-block',
+				errorPlacement: function(error, element) {
+						if(element.parent('.input-group').length) {
+								error.insertAfter(element.parent());
+						} else {
+								error.insertAfter(element);
+						}
+				}
+		});
+
+		// Config the validate options
+		var valid = $( '#sc-form' ).validate( { 
+			rules     : { 
+				BILLTOFIRSTNAME : {
+					minlength   	: 1,
+					required    	: true,
+					notJustASpace	: true,
+				},
+				BILLTOLASTNAME : {
+					minlength   	: 1,
+					required    	: true,
+					notJustASpace	: true,
+				}, 
+				BILLTOORGNAME : {
+					minlength   	: 1,
+					required    	: true,
+					notJustASpace	: true,
+				}, 
+				INVOICENUMBER : {
+					minlength   	: 1,
+					required    	: true,
+					notJustASpace	: true,
+				},
+				BILLTOEMAIL   : { 
+					required    : {
+						depends:function(){
+								$(this).val($.trim($(this).val()));
+								return true;
+						}
+					},
+					email       : true
+				}, 
+				SUBTOTAL   : {
+					required    : true,
+					pattern     : /^\$?\d+(,\d{3})*(\.[0-9]{2})?$/
+				}, 
+			},
+		});
+	}
+
+	function validateForm() {
+
+		// Setup the rules for form validation
+		configFormValidation();
+
+		// Send the request if we have required info
+		return $( '#sc-form' ).valid();
+	}
+
+	/**
+	 * Handler for Plaid Link
+	 * 
+	 * @param  {object} e - DOM event 
+	 */
+	function clickPlaidLink( e ) {
+
+		if( validateForm() ) {
+			linkHandler.open();
+		}
 		
+		e.preventDefault();
+	}
+
+	/**
+	 * Handler for Stripe Checkout
+	 * 
+	 * @param  {object} e - DOM event 
+	 */
+	function clickStripeCheckout( e ) {
 		var customerName = getCustomerName();
 		var amount = getAmount();
 		var invoice = 'Invoice: ' + $( '#invoice' ).val();
 		var email = $( '#email' ).val();
 
-		// Open Checkout with further options:
-		checkoutHandler.open({
-			name 					: customerName,
-			email 				: email,
-			description 	: invoice,
-			zipCode 			: true,
-			amount 				: amount.amount,
-		});
+		if( validateForm() ) {
+
+			// Open Checkout with further options:
+			checkoutHandler.open({
+				name 					: customerName,
+				email 				: email,
+				description 	: invoice,
+				zipCode 			: true,
+				amount 				: parseInt( amount.amount ),
+			});
+		}
 
 		e.preventDefault();
-	});
-
-	// Get token from plaid
-	document.getElementById( 'payACHButton' ).addEventListener( 'click', callPlaid );
-
-	// Close Checkout on page navigation:
-	window.addEventListener('popstate', function() {
-		checkoutHandler.close();
-	});
+	}
 
 	function getCustomerName() {
 		var customerName = '';
@@ -90,6 +185,7 @@
 	}
 
 	function getAmount() {
+		
 		// format amount
 		var amountInt = $( '#sp-amount' ).val() * 1;
 		var amountFloat = amountInt.toFixed( 2 );
@@ -98,105 +194,95 @@
 		return { asInt : amountInt, asFloat : amountFloat, amount : amount };
 	}
 
+	/**
+	 * AJAX call to process Plaid token
+	 */
 	function callPlaid() {
 
-		// Format amount
-		var amount = getAmount();
-		var amountInt = amount.asInt;
-		var amountFloat = amount.asFloat;
-		amount = amount.amount;
+		var buttonId = '#payACHButton';
+		var action = 'call_plaid';
+		var payload = { account_id : opt.account_id };
 
-		$('#sp-response').hide();
-
-		if ( amountInt >= .50 ) {
-			$('.sp-spinner').css('opacity', 1);
-			$('#payACHButton').off('click');
-
-			var data = {
-				nonce        	: ajax_object.ajax_nonce,
-				email  				: $('#email').val(),	
-				action       	: 'call_plaid',
-				amount       	: amount,
-				account_id   	: opt.account_id,
-				description  	: $('#invoice').val(),
-				public_token 	: opt.public_token,
-				customer_name : getCustomerName(),
-			};
-
-			$.ajax({
-				url     : ajax_object.ajax_url,
-				type    : 'POST',
-				data    : data,
-				success : function( data ){
-					ajaxCallback( data );
-				}
-			});
-
-		} else {
-			addError( 'Amount must be at least 50 cents' );
+		if( validateForm() ) {
+			ajax( action, payload, buttonId );
 		}
 	}
 
+	/**
+	 * AJAX call to process Stripe Checkout token
+	 */
 	function callStripe() {
 
+		var buttonId = '#checkoutButton';
+		var action = 'call_stripe';
+		var payload = {};
+
+		ajax( action, payload, buttonId );
+	}
+
+	function ajax( action, extraPayload, buttonId ) {
+
 		// Format amount
 		var amount = getAmount();
 		var amountInt = amount.asInt;
 		var amountFloat = amount.asFloat;
 		amount = amount.amount;
 
-		$('#sp-response').hide();
-
 		if ( amountInt >= .50 ) {
 			$('.sp-spinner').css('opacity', 1);
-			$('#checkoutButton').off('click');
+			$( buttonId ).off('click');
 
-			var data = {
+			var payload = {
 				nonce        	: ajax_object.ajax_nonce,
 				email  				: $('#email').val(),	
-				action       	: 'call_stripe',
+				action       	: action,
 				amount       	: amount,
 				description  	: $('#invoice').val(),
 				public_token 	: opt.public_token,
 				customer_name : getCustomerName(),
 			};
 
+			// Merge in any additional payload data
+			$.extend( payload, extraPayload );
+
 			$.ajax({
 				url     : ajax_object.ajax_url,
 				type    : 'POST',
-				data    : data,
+				data    : payload,
 				success : function( data ){
 					ajaxCallback( data );
 				}
 			});
 
 		} else {
-			addError( 'Amount must be at least 50 cents' );
+			addError( '<h4>Amount must be at least 50 cents</h4>' );
 		}
-	}
-
-	function addError( message ){
-		$('#sp-pay').on('click', callPlaid );
-		$('#sp-response').show();
-		$('#sp-response').text( message );
-		$('#sp-response').addClass('error');
-		$('#sp-response').removeClass('success');
 	}
 
 	function ajaxCallback( data ) {
 		$('.sp-spinner').css('opacity', 0);
 
 		if ( data.error ) {
-			addError( 'There was an error processing you payment.' );
+			addError( '<h4>There was an error processing you payment.</h4>' );
 		} else {
-			$('#sc-form').slideUp('slow'); //fadeTo('fast', 0).hide();
+			var header = '<h3>Success. Thank you for your payment.</h3>';
+			var name = '<h4>Name: ' + getCustomerName() + '</h4>';
+			var email = '<h4>Email: ' + $('#email').val() + '</h4>';
+			var invoice = '<h4>Invoice: ' + $('#invoice').val() + '</h4>';
+			var amount = '<h4>Amount: ' + $('#sp-amount').val() + '</h4>';
+			var msg =  header + name + email + invoice + amount;
+
+			$('#sc-form').slideUp('slow');
 			$('#sp-response').show();
-			$('#sp-response').text('Success. Thank you for your payment.');
+			$('#sp-response').html( msg );
 			$('#sp-response').removeClass('error');
 			$('#sp-response').addClass('success');
 		}
 	}
 
+	/**
+	 * Add processing fee to subtotal
+	 */
 	function calculatePercent() {       
 		var transaction = document.getElementById( "subTotal" ),
 				total = document.getElementById( "sp-amount" ),
@@ -204,6 +290,14 @@
 				percent = 3 / 100;
 
 		total.value = Number(transValue + transValue * percent).toFixed(2);
+	}
+
+	function addError( message ){
+		$('#sp-pay').on('click', callPlaid );
+		$('#sp-response').show();
+		$('#sp-response').html( '<h4>' + message + '</h4>' );
+		$('#sp-response').addClass('error');
+		$('#sp-response').removeClass('success');
 	}
 
 })( jQuery );

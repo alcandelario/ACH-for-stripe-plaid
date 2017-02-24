@@ -2,6 +2,16 @@
   color: #333 !important;
 }
 
+#sc-form .form-group {
+  display: block;
+  margin: 0;
+}
+
+#sc-form .help-block {
+  position: relative;
+  margin-top: 5px !important;
+}
+
 #payACHButton{
   display: none;
 }
@@ -30,6 +40,12 @@
   border: 2px solid #168001;
   background: #e6f9e3;
 }
+
+#sp-response h3,
+#sp-response h4 {
+  font-weight: 400;
+}
+
 .loader,
 .loader:before,
 .loader:after {

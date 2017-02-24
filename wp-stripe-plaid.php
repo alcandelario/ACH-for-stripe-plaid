@@ -14,10 +14,10 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Stripe + Plaid payments
- * Plugin URI:        https://www.justinwhall.com/wp-stripe-plaid-ach-wordpress-plugin
- * Description:       Accept Credit Cards with Stripe's checkout.js or ACH payments with Plaid Link + Stripe.
+ * Plugin URI:        https://doejo.com
+ * Description:       Shortcode to generate form that accepts credit cards with Stripe's checkout.js or ACH payments with Plaid Link + Stripe.
  * Version:           1.0.1
- * Author:            Doejo LLC
+ * Author:            Doejo (AC)
  * Author URI:        https://doejo.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
