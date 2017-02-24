@@ -39,9 +39,6 @@
 	// Calculate total with processing fees automatically
 	document.getElementById( 'subTotal' ).addEventListener("keyup", calculatePercent);
 
-	// Call it upon page load since it may be prefilled
-	calculatePercent();
-
 	// Triggers the Plaid Link UI
 	document.getElementById( 'linkACHButton' ).addEventListener('click', clickPlaidLink );
 
@@ -55,6 +52,9 @@
 	window.addEventListener('popstate', function() {
 		checkoutHandler.close();
 	});
+
+	// Call this upon page load since query string may pre-fill the total
+	calculatePercent();
 
 	function configFormValidation() {
 
