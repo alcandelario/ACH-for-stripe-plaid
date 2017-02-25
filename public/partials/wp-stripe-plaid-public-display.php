@@ -63,27 +63,27 @@ $enable = ( ! empty( $sc_pub_key ) ) ? true : false;
                 <h4><span class="req">*</span> Required Fields</h4>
 
                 <div class='clearfix'>
-                  <?php if( ! $is_org ) : ?>
+                  <?php if( false ) : ?>
               
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                       <label for="BILLTOFIRSTNAME"> <span class="req">*</span> Card Holder First Name</label>
-                      <input id='firstName' type="text" name="BILLTOFIRSTNAME" value="<?php echo esc_attr( $firstName ); ?>" class="form-control" placeholder="First Name" required="" style="">
+                      <input id='firstName' type="text" name="BILLTOFIRSTNAME" value="<?php //echo esc_attr( $firstName ); ?>" class="form-control" placeholder="First Name" required="" style="">
                     </div>
                     
                     <div class="form-group">
                       <label for="BILLTOLASTNAME"> <span class="req">*</span>Card Holder Last Name</label>
-                      <input id='lastName' type="text" name="BILLTOLASTNAME" value="<?php echo esc_attr( $lastName ); ?>" class="form-control" placeholder="Last Name" required="">
-                    </div>
+                      <input id='lastName' type="text" name="BILLTOLASTNAME" value="<?php //echo esc_attr( $lastName ); ?>" class="form-control" placeholder="Last Name" required="">
+                    </div> -->
               
                   <?php else : ?>
                     <div class="form-group">
-                      <label for="BILLTOORGNAME"> <span class="req">*</span> Organization Name</label>
-                      <input id='orgName' type="text" name="BILLTOORGNAME" value="<?php echo esc_attr( $cus_name ); ?>" class="form-control" placeholder="Organization Name" required="" style="">
+                      <label for="BILLTONAME"> <span class="req">*</span>Name</label>
+                      <input id='name' type="text" name="BILLTONAME" value="<?php echo esc_attr( $cus_name ); ?>" class="form-control" placeholder="Name" required="" style="">
                     </div>
                   <?php endif; ?>
 
                   <div class="form-group">
-                    <label for="BILLTOEMAIL"><span class="req">*</span>Card Holder Email</label>
+                    <label for="BILLTOEMAIL"><span class="req">*</span>Email</label>
                     <input id='email' type="email" name="BILLTOEMAIL" value="<?php echo esc_attr( $cus_email ); ?>" class="form-control" placeholder="Email" required="">
                   </div>
                   <div class="form-group">
@@ -97,8 +97,7 @@ $enable = ( ! empty( $sc_pub_key ) ) ? true : false;
                   </div>
 
                   <div class="form-group">
-                    <label>Total</label>
-                    <input id="sp-amount" type="text" name="AMT" value="" class="form-control" placeholder="0.00" readonly="">
+                    <input id="sp-amount" type="hidden" name="AMT" value="" class="form-control" placeholder="0.00" readonly="">
                   </div>
                 </div>
 
@@ -122,8 +121,65 @@ $enable = ( ! empty( $sc_pub_key ) ) ? true : false;
           </div>
         </form>
 
-        <div class='text-center' id="sp-response"></div>
+        <div class='text-center hidden' id="sp-response">
+          <div class='inner'></div>
 
+          <div id='receipt' class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-xs-6 text-left">
+                        <address>
+                            <strong>Name: <span id='rcpt-name'></span></strong>
+                            <br/>
+                            <span>Email: <span id='rcpt-email'></span></span>
+                            <br/>
+                        </address>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <div><em>Date: <span id='rcpt-date'></span></em></div>
+                        <div><em>Invoice #: <span id='rcpt-invoice'></span></em></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="text-center">
+                        <h3>Receipt</h3>
+                    </div>
+                    </span>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td class="text-right">
+                                  <p>
+                                      <strong>Subtotal: </strong>
+                                  </p>
+                                  <p>
+                                      <strong>Processing Fee: </strong>
+                                  </p>
+                                </td>
+                                <td class="text-center">
+                                  <p>
+                                      <strong id='rcpt-subtotal'></strong>
+                                  </p>
+                                  <p>
+                                      <strong id='rcpt-fee'></strong>
+                                  </p>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td class="text-right"><h4><strong>Total: </strong></h4></td>
+                                <td class="text-center text-success"><h4><strong id='rcpt-total'></strong></h4></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+        </div><!-- #sp-response -->
     </div><!-- /.col-md-6 col-md-offset-3 -->
   </div><!-- /.row -->
 

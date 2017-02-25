@@ -145,11 +145,17 @@ class Wp_Stripe_Plaid_Public {
 		}
 	}
 
-	public function stripe_charge( $amount, $currency, $source, $description, $customer = false, $meta = false ){
+	public function setStripeAPIKey() {
 
 		// Live or test?
 		$stripe_key = ( $this->settings['sp_environment'] === 'live' ) ? $this->settings['stripe_live_api_key'] : $this->settings['stripe_test_api_key'];
+		
 		\Stripe\Stripe::setApiKey( $stripe_key );
+	}
+
+	public function stripe_charge( $amount, $currency, $source, $description, $customer = false, $meta = false ){
+
+		$this->setStripeAPIKey();
 
 		$return = array( 'error' => false );
 
@@ -161,7 +167,10 @@ class Wp_Stripe_Plaid_Public {
 				"description" => $description
 			);
 
-			if( $source ) {
+			if( $customer ) {
+				$params[ 'customer' ] = $customer;
+			}
+			else if( $source ) {
 				$params[ 'source' ] = $source;
 			}
 
@@ -216,14 +225,28 @@ class Wp_Stripe_Plaid_Public {
 		return $return;
 	}
 
-	public function stripe_create_customer( $token, $email ) {
+	public function stripe_create_customer( $token, $email, $metadata, $hasSource = false ) {
 		$customer = false;
 
+		$customerData = ( ! $hasSource ) ? [ 'email' => $email, 'card' => $token ] : [ 'email' => $email, 'source' => $token ];
+
 		if( isset( $token ) && isset( $email ) ) {
-			$customer = \Stripe\Customer::create( array(
-				'email' => $email,
-				'card'  => $token,
-			));
+
+			try {
+
+				$this->setStripeAPIKey();
+
+				$customerData[ 'description' ] = 'Customer added via stripe-plaid-ach-cc WP plugin';
+
+				if( $metadata ) {
+					$customerData[ 'metadata' ] = $metadata;
+				}
+
+				$customer = \Stripe\Customer::create( $customerData );
+			}
+			catch (Exception $e ) {
+				
+			}
 		}
 
 		return $customer;
@@ -244,17 +267,20 @@ class Wp_Stripe_Plaid_Public {
 		$description   	= $_POST[ 'description' ];
 		$name      			= $_POST[ 'customer_name' ];
 		
-		// $new_customer = stripe_create_customer( $token, $email );
-		
+		$new_customer = $this->stripe_create_customer( $token, $email, [ 'name' => $name ], true );
+
+		$cus_id = ( isset( $new_customer ) && isset( $new_customer[ 'id' ] ) ) ? $new_customer[ 'id' ] : false;
+
 		// Create the meta data to attach to the Stripe transaction
 		$meta = [
 			'email' 	=> $email,
 			'name'		=> $name,
 			'invoice' => $description,
 		];
+	
 
 		// Create the Credit/Debit charge
-		$charge = $this->stripe_charge( $amount, 'USD', $token, $description, false, $meta );	
+		$charge = $this->stripe_charge( $amount, 'USD', $token, $description, $cus_id, $meta );	
 
 		wp_send_json( $charge );
 
@@ -293,6 +319,9 @@ class Wp_Stripe_Plaid_Public {
 		// Execute session
 		$keys = curl_exec( $ch );
 		$keys = json_decode( $keys );
+
+		// Stripe token
+		$token = $keys->stripe_bank_account_token;
 		
 		// Close session
 		curl_close( $ch );
@@ -304,8 +333,12 @@ class Wp_Stripe_Plaid_Public {
 			'invoice' => $description,
 		];
 
+		$new_customer = $this->stripe_create_customer( $token, $email, [ 'name' => $name ], true );
+
+		$cus_id = ( isset( $new_customer ) && isset( $new_customer[ 'id' ] ) ) ? $new_customer[ 'id' ] : false;
+
 		// Create the ACH charge
-		$charge = $this->stripe_charge( $amount, 'USD', $keys->stripe_bank_account_token, $description, false, $meta );
+		$charge = $this->stripe_charge( $amount, 'USD', $token, $description, $cus_id, $meta );
 
 		wp_send_json( $charge );
 

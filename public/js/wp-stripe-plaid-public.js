@@ -95,7 +95,7 @@
 					required    	: true,
 					notJustASpace	: true,
 				}, 
-				BILLTOORGNAME : {
+				BILLTONAME : {
 					minlength   	: 1,
 					required    	: true,
 					notJustASpace	: true,
@@ -180,18 +180,30 @@
 		else if( $( '#firstName' ).length > 0 ) {
 			customerName = $( '#firstName' ).val() + ' ' + $( '#lastName' ).val();
 		}
+		else if( $( '#name' ).length > 0 ) {
+			customerName = $( '#name' ).val();
+		}
 
 		return customerName;
 	}
 
 	function getAmount() {
 		
-		// format amount
-		var amountInt = $( '#sp-amount' ).val() * 1;
+		var isACH = ( typeof opt.isACH === 'undefined' || opt.isACH === null ) ? false : true;
+		var input = ( ! isACH ) ? $( '#sp-amount' ) : $( '#subTotal' );
+
+		// Format amount
+		var amountInt = input.val() * 1;
 		var amountFloat = amountInt.toFixed( 2 );
 		var amount = String( amountFloat.replace( '.', '' ) );
 
-		return { asInt : amountInt, asFloat : amountFloat, amount : amount };
+		return { 
+			isACH 		: isACH,
+			asInt 		: amountInt,
+			amount 		: amount,
+			asFloat 	: amountFloat, 
+			subTotal 	: $( '#subTotal' ).val(),
+		};
 	}
 
 	/**
@@ -204,6 +216,7 @@
 		var payload = { account_id : opt.account_id };
 
 		if( validateForm() ) {
+			opt.isACH = true;
 			ajax( action, payload, buttonId );
 		}
 	}
@@ -259,22 +272,43 @@
 		}
 	}
 
+	function getReceiptData() {
+		
+		var amountObj = getAmount();
+		
+		var data = {
+			header 		: '<h3>Success. Thank you for your payment.</h3>',
+			name 			: getCustomerName(),
+			email 		: $('#email').val(),
+			invoice 	: $('#invoice').val(),
+			amount  	: amountObj.asFloat,
+			subTotal 	: amountObj.subTotal,
+			date 			: new Date().toLocaleString(),
+		}
+
+		data.fee = ( data.amount - data.subTotal ).toFixed( 2 );
+				
+		return data;
+	}
+
 	function ajaxCallback( data ) {
 		$('.sp-spinner').css('opacity', 0);
 
 		if ( data.error ) {
 			addError( '<h4>There was an error processing you payment.</h4>' );
 		} else {
-			var header = '<h3>Success. Thank you for your payment.</h3>';
-			var name = '<h4>Name: ' + getCustomerName() + '</h4>';
-			var email = '<h4>Email: ' + $('#email').val() + '</h4>';
-			var invoice = '<h4>Invoice: ' + $('#invoice').val() + '</h4>';
-			var amount = '<h4>Amount: ' + $('#sp-amount').val() + '</h4>';
-			var msg =  header + name + email + invoice + amount;
+			var data = getReceiptData();
 
 			$('#sc-form').slideUp('slow');
-			$('#sp-response').show();
-			$('#sp-response').html( msg );
+			$('#sp-response' ).removeClass( 'hidden' ).show();
+			$('#sp-response').find( '.inner' ).html( data.header );
+			$('#sp-response').find( '#rcpt-name' ).text( data.name );
+			$('#sp-response').find( '#rcpt-email' ).text( data.email );
+			$('#sp-response').find( '#rcpt-date' ).text( data.date );
+			$('#sp-response').find( '#rcpt-invoice' ).text( data.invoice );
+			$('#sp-response').find( '#rcpt-subtotal' ).text( data.subTotal );
+			$('#sp-response').find( '#rcpt-fee' ).text( data.fee );
+			$('#sp-response').find( '#rcpt-total' ).text( data.amount );
 			$('#sp-response').removeClass('error');
 			$('#sp-response').addClass('success');
 		}
@@ -294,7 +328,7 @@
 
 	function addError( message ){
 		$('#sp-pay').on('click', callPlaid );
-		$('#sp-response').show();
+		$('#sp-response').removeClass( 'hidden' ).show();
 		$('#sp-response').html( '<h4>' + message + '</h4>' );
 		$('#sp-response').addClass('error');
 		$('#sp-response').removeClass('success');
