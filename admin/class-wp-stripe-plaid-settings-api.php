@@ -61,6 +61,7 @@ if ( !class_exists( 'WeDevs_Settings_API' ) ):
             $this->settings_fields = $fields;
             return $this;
         }
+        
         function add_field( $section, $field ) {
             $defaults = array(
                 'name'  => '',
@@ -410,32 +411,120 @@ if ( !class_exists( 'WeDevs_Settings_API' ) ):
          *
          * This function displays every sections in a different form
          */
-        function show_forms() {
-            ?>
+        function show_forms() { ?>
             <div class="metabox-holder">
-                <?php foreach ( $this->settings_sections as $form ) { ?>
-                    <div id="<?php echo $form['id']; ?>" class="group" style="display: none;">
-                        <form method="post" action="options.php">
-                            <?php
-                            do_action( 'wsa_form_top_' . $form['id'], $form );
-                            settings_fields( $form['id'] );
-                            do_settings_sections( $form['id'] );
-                            do_action( 'wsa_form_bottom_' . $form['id'], $form );
-                            if ( isset( $this->settings_fields[ $form['id'] ] ) && $form['id'] !== 'stripe_plaid_log' ):
-                            ?>
-                            <div style="padding-left: 10px">
-                                <?php submit_button(); ?>
-                            </div>
-                            <?php endif; ?>
-
-                            <?php if ( $form['id'] == 'stripe_plaid_log' ) { $this->render_log(); } ?>
-                        </form>
-                    </div>
-                <?php } ?>
+                <?php foreach ( $this->settings_sections as $form ) :
+                    $this->render_default_form( $form );
+                endforeach;?>
             </div>
+            
             <?php
             $this->script();
         }
+
+        function render_url_generator() { 
+            
+            $opts = get_option( 'stripe_plaid_settings' );
+            $slug = ( isset( $opts[ 'stripe_form_page_slug' ] ) ) ? $opts[ 'stripe_form_page_slug' ] : '';
+            ?>
+
+            <div class='url-generator-form' id="<?php echo $form['id']; ?>" class="group">
+                <style>
+                    .form-group {
+                        padding-bottom: 15px;   
+                    }
+
+                    .form-group label {
+                        font-weight: bold;
+                        width: 100%;
+                        display: block;
+                    }
+                </style>
+                <h4>Fill in the info below and click submit to generate a custom invoicing URL that will prefill the form</h4>
+
+                <br/>
+
+                <div class='form-group'>
+                    <label>Bill to Name:</label>
+                    <input style='width:200px;' type='text' placeholder='Name' id='name' />
+                </div>
+                <div class='form-group'>
+                    <label>Invoice Number:</label>
+                    <input class='form-control' style='width:200px;' type='text' placeholder='Invoice Number' id='invoice' />
+                </div>
+                <div class='form-group'>
+                    <label>Bill to Email:</label>
+                    <input class='form-control' style='width:200px;' type='text' placeholder='Email address' id='email' />
+                </div>
+                <div class='form-group'>
+                    <label>Invoice Amount:</label>
+                    <input class='form-control' style='width:200px;' type='text' placeholder='Invoice Amount (e.g. 472.54)' id='amount' />
+                </div>
+                
+                <br/>
+                
+                <button id='submit' type='submit' class='button button-primary'>Generate URL</button><br/>
+                
+                <h3 id='url'></h3>
+
+                <script type='text/javascript'>
+                    var $ = jQuery;
+
+                    $( document ).ready( function() {
+                        var generator = $( '.url-generator-form' );
+                        var submit = generator.find( '#submit' );
+
+                        submit.click( function(e) {
+                          e.preventDefault();
+
+                          var host = window.location.origin;
+                          var slug = '<?php echo esc_attr( $slug ); ?>';
+                          var name = $.trim( generator.find( '#name' )[0].value );
+                          var invoice = $.trim( generator.find( '#invoice' )[0].value );
+                          var email = $.trim( generator.find( '#email' )[0].value );
+                          var amount = $.trim( generator.find( '#amount' )[0].value );
+
+                          // Dollars to cents
+                          amount = parseFloat( amount ) * 100;
+                          invoice = invoice.split( ' ' ).join( '+' );
+                          name = name.split( ' ' ).join( '+' );
+
+                          var theUrl = host + '/' + slug + '/?amount=' + amount + '&email=' + email + '&invoice=' + invoice + '&billtoname=' + name;
+
+                          // Display the URL
+                          generator.find( '#url' ).text( theUrl );
+                        });
+                    }); 
+                </script>
+            </div>
+        <?php
+        }
+
+        function render_default_form( $form ) { ?>
+            <div id="<?php echo $form['id']; ?>" class="group" style="display: none;">
+                <form method="post" action="options.php">
+                    <?php
+                    do_action( 'wsa_form_top_' . $form['id'], $form );
+                    settings_fields( $form['id'] );
+                    do_settings_sections( $form['id'] );
+                    do_action( 'wsa_form_bottom_' . $form['id'], $form );
+                    if ( isset( $this->settings_fields[ $form['id'] ] ) && $form['id'] !== 'stripe_plaid_log' ):
+                    ?>
+                    <div style="padding-left: 10px">
+                        <?php submit_button(); ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ( $form['id'] == 'stripe_plaid_log' ) { $this->render_log(); } ?>
+
+                    <?php if ( $form['id'] == 'stripe_plaid_urlgen' ) { $this->render_url_generator(); } ?>
+                </form>
+                <br/>
+                <h3>USAGE: to generate the form insert [wp_stripe_plaid] into the post-body of whichever page you'd like</h3>
+            </div>
+            <?php
+        }
+
         /**
          * Tabbable JavaScript codes & Initiate Color Picker
          *

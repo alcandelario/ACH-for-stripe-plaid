@@ -261,26 +261,24 @@ class Wp_Stripe_Plaid_Public {
 
 		check_ajax_referer( 'stripe_plaid_nonce', 'nonce' );
 
-		$email 					= $_POST[ 'email' ];		
-		$token         	= $_POST[ 'public_token' ];
-		$amount        	= $_POST[ 'amount' ];
-		$description   	= $_POST[ 'description' ];
-		$name      			= $_POST[ 'customer_name' ];
+		$data = $this->get_post_data();
 		
-		$new_customer = $this->stripe_create_customer( $token, $email, [ 'name' => $name ], true );
+		$new_customer = $this->stripe_create_customer( $data->token, $data->email, [ 'name' => $data->name ], true );
 
 		$cus_id = ( isset( $new_customer ) && isset( $new_customer[ 'id' ] ) ) ? $new_customer[ 'id' ] : false;
 
 		// Create the meta data to attach to the Stripe transaction
 		$meta = [
-			'email' 	=> $email,
-			'name'		=> $name,
-			'invoice' => $description,
+			'email' 		=> $data->email,
+			'name'			=> $data->name,
+			'invoice' 	=> $data->description,
+			'subtotal'	=> $data->subtotal,
+			'total'			=> $data->total_formatted,
+			'fees'			=> $data->fees,
 		];
 	
-
 		// Create the Credit/Debit charge
-		$charge = $this->stripe_charge( $amount, 'USD', $token, $description, $cus_id, $meta );	
+		$charge = $this->stripe_charge( $data->amount, 'USD', $data->token, $data->description, $cus_id, $meta );	
 
 		wp_send_json( $charge );
 
@@ -291,22 +289,17 @@ class Wp_Stripe_Plaid_Public {
 
 		check_ajax_referer( 'stripe_plaid_nonce', 'nonce' );
 
-		$email 				= $_POST[ 'email' ];		
-		$token       	= $_POST[ 'public_token' ];
-		$amount      	= $_POST[ 'amount' ];
-		$description 	= $_POST[ 'description' ];
-		$name      		= $_POST[ 'customer_name' ];	
-		$account 			= $_POST[ 'account_id' ];
+		$data = $this->get_post_data();
 
 		// Create the payload for Plaid
-		$data = array(
+		$arr = array(
 					'client_id'    	=> $this->settings[ 'plaid_client_id' ],
 					'secret'       	=> $this->settings[ 'plaid_secret' ],
-					'public_token'	=> $token,
-					'account_id'   	=> $account,
+					'public_token'	=> $data->token,
+					'account_id'   	=> $data->account_id,
 		);
 
-		$string = http_build_query( $data );
+		$string = http_build_query( $arr );
 
 		// Initialize session
 		$ch = curl_init( "https://tartan.plaid.com/exchange_token" );
@@ -328,21 +321,41 @@ class Wp_Stripe_Plaid_Public {
 
 		// Create the meta data to attach to the Stripe transaction
 		$meta = [
-			'email' 	=> $email,
-			'name'		=> $name,
-			'invoice' => $description,
+			'email' 		=> $data->email,
+			'name'			=> $data->name,
+			'invoice' 	=> $data->description,
+			'subtotal'	=> $data->subtotal,
+			'total'			=> $data->total_formatted,
+			'fees'			=> $data->fees,
 		];
 
-		$new_customer = $this->stripe_create_customer( $token, $email, [ 'name' => $name ], true );
+		$new_customer = $this->stripe_create_customer( $token, $data->email, [ 'name' => $data->name ], true );
 
 		$cus_id = ( isset( $new_customer ) && isset( $new_customer[ 'id' ] ) ) ? $new_customer[ 'id' ] : false;
 
 		// Create the ACH charge
-		$charge = $this->stripe_charge( $amount, 'USD', $token, $description, $cus_id, $meta );
+		$charge = $this->stripe_charge( $data->amount, 'USD', $token, $data->description, $cus_id, $meta );
 
 		wp_send_json( $charge );
 
 		wp_die();
+	}
+
+	private function get_post_data() {
+		
+		$amount = $_POST[ 'amount' ];
+
+		return (object) [
+			'email'						=> $_POST[ 'email' ],		
+			'token'       		=> $_POST[ 'public_token' ],
+			'amount'       		=> $amount,
+			'description'  		=> $_POST[ 'description' ],
+			'name'      			=> $_POST[ 'customer_name' ],
+			'subtotal' 				=> money_format( '%.2n', $_POST[ 'sub_total' ] ),
+			'fees'						=> money_format( '%.2n', $_POST[ 'fees' ] ),
+			'total_formatted'	=> money_format( '%.2n', $amount / 100 ),
+			'account_id'			=> $_POST[ 'account_id' ],
+		];
 	}
 
 	static function write_error( $message ) {

@@ -27,9 +27,9 @@ else {
 // See if we can prefill email from query string
 $cus_email   = sanitize_email( $_GET[ 'email' ] );
 
-if( isset( $_GET[ 'orgname' ] ) || isset( $_GET[ 'store_name' ] ) ) {
+if( isset( $_GET[ 'billtoname' ] ) || isset( $_GET[ 'store_name' ] ) ) {
   $is_org = true;
-  $name  = ( isset( $_GET[ 'orgname' ] ) ) ? $_GET[ 'orgname' ]: $_GET[ 'store_name' ];
+  $name  = ( isset( $_GET[ 'billtoname' ] ) ) ? $_GET[ 'billtoname' ]: $_GET[ 'store_name' ];
   
   $cus_name = sanitize_text_field( $name );
 }

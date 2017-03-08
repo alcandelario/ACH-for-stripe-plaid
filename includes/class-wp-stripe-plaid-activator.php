@@ -33,9 +33,10 @@ class Wp_Stripe_Plaid_Activator {
 		
 		$settings = array(
 			'sp_environment'      					=> 'live',
-			'stripe_live_public_api_key'		=>'',
+			'stripe_form_page_slug'					=> '',
+			'stripe_live_public_api_key'		=> '',
 			'stripe_live_api_key' 					=> '',
-			'stripe_test_public_api_key'		=>'',
+			'stripe_test_public_api_key'		=> '',
 			'stripe_test_api_key' 					=> '',
 			'plaid_client_id'     					=> '' ,
 			'plaid_secret'        					=> '' ,

@@ -197,12 +197,15 @@
 		var amountFloat = amountInt.toFixed( 2 );
 		var amount = String( amountFloat.replace( '.', '' ) );
 
+		var subTotal = $( '#subTotal' ).val();
+
 		return { 
 			isACH 		: isACH,
 			asInt 		: amountInt,
 			amount 		: amount,
 			asFloat 	: amountFloat, 
-			subTotal 	: $( '#subTotal' ).val(),
+			subTotal 	: subTotal,
+			fees 			: ( amountFloat - subTotal ).toFixed( 2 ),
 		};
 	}
 
@@ -236,10 +239,12 @@
 	function ajax( action, extraPayload, buttonId ) {
 
 		// Format amount
-		var amount = getAmount();
-		var amountInt = amount.asInt;
+		var amount 			= getAmount();
+		var amountInt 	= amount.asInt;
 		var amountFloat = amount.asFloat;
-		amount = amount.amount;
+		var subTotal 		= amount.subTotal;
+		var fees 				= amount.fees;
+		amount 					= amount.amount;
 
 		if ( amountInt >= .50 ) {
 			$('.sp-spinner').css('opacity', 1);
@@ -253,6 +258,8 @@
 				description  	: $('#invoice').val(),
 				public_token 	: opt.public_token,
 				customer_name : getCustomerName(),
+				sub_total  		: subTotal,
+				fees 					: fees,
 			};
 
 			// Merge in any additional payload data
@@ -306,9 +313,9 @@
 			$('#sp-response').find( '#rcpt-email' ).text( data.email );
 			$('#sp-response').find( '#rcpt-date' ).text( data.date );
 			$('#sp-response').find( '#rcpt-invoice' ).text( data.invoice );
-			$('#sp-response').find( '#rcpt-subtotal' ).text( data.subTotal );
-			$('#sp-response').find( '#rcpt-fee' ).text( data.fee );
-			$('#sp-response').find( '#rcpt-total' ).text( data.amount );
+			$('#sp-response').find( '#rcpt-subtotal' ).text( '$' + data.subTotal );
+			$('#sp-response').find( '#rcpt-fee' ).text( '$' + data.fee );
+			$('#sp-response').find( '#rcpt-total' ).text( '$' + data.amount );
 			$('#sp-response').removeClass('error');
 			$('#sp-response').addClass('success');
 		}

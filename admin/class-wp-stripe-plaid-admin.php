@@ -103,6 +103,10 @@ class Wp_Stripe_Plaid_Admin {
 					array(
 							'id'    => 'stripe_plaid_log',
 							'title' => __( 'Log', 'stripe_plaid' )
+					),
+					array(
+							'id'		=> 'stripe_plaid_urlgen',
+							'title'	=> __( 'URL Generator', 'stripe_plaid' )
 					)
 			);
 			return $sections;
@@ -124,6 +128,15 @@ class Wp_Stripe_Plaid_Admin {
 										'live' => 'Live',
 										'test'  => 'Test'
 								)
+						),
+						array(
+								'name'              => 'stripe_form_page_slug',
+								'label'             => __( 'Page slug where form is displayed', $plugin_name ),
+								'desc'              => __( '', $plugin_name ),
+								'placeholder'       => __( 'Page slug (e.g. payments)', $plugin_name ),
+								'type'              => 'text',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field'
 						),
 						array(
 								'name'              => 'stripe_live_public_api_key',
