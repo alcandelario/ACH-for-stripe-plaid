@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              htps://doejo.com
+ * @link              https://google.com
  * @since             1.0.0
  * @package           Wp_Stripe_Plaid
  *
  * @wordpress-plugin
  * Plugin Name:       Stripe + Plaid payments
- * Plugin URI:        https://doejo.com
+ * Plugin URI:        https://google.com
  * Description:       Shortcode [wp_stripe_plaid] to generate form that accepts credit cards with Stripe's checkout.js or ACH payments with Plaid Link + Stripe.
  * Version:           1.0.1
- * Author:            Doejo (AC)
- * Author URI:        https://doejo.com
+ * Author:            (AC)
+ * Author URI:        https://google.com
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       wp-stripe-plaid
